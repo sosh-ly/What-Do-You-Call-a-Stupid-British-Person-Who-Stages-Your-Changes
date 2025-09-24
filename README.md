@@ -3,8 +3,8 @@ What Do You Call a Stupid British Person Who Stages Your Changes?
 READ ME:
 
 Git:
-Two options for creating the repository, if no parameters given, name will be ".aGit", otherwise name will be as specified when made.
-File.separator is used for paths in order to ensure code works on multiple operating systems, same with naming and hiding folder.
+Two options for creating the repository, if no path given, or if invalid path, git will be created in current folder.
+File.separator is used for paths in order to ensure code works on multiple operating systems
 
 GitTester:
 Method to verify if all required repo files were initialized (.repoExists)

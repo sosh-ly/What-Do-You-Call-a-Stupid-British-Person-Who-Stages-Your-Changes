@@ -9,14 +9,21 @@ public class GitTester {
         System.out.println(repoExists(testGit)); // see if it still exists
         cleanup(testGit); // attempt to clean up non-existent Git
 
-        Git testGit2 = new Git("gitName2"); // create new Git to test
+        Git testGit2 = new Git(); // create new Git to test
         System.out.println(repoExists(testGit2));
-        Git testGit3 = new Git("gitName2"); // attempt to create duplicate Git
+        Git testGit3 = new Git(); // attempt to create duplicate Git
         System.out.println(repoExists(testGit3)); // see if duplicate Git exists
 
         cleanup(testGit2);
         cleanup(testGit3);
 
+        Git testGit4 = new Git("notrealfolder"); // try to create git in non-existent path
+        System.out.println(repoExists(testGit4));
+        cleanup(testGit4);
+
+        Git testGit5 = new Git("testFolder"); // try to create git in testFolder
+        System.out.println(repoExists(testGit5));
+        cleanup (testGit5);
     }
 
     public static boolean repoExists(Git gitToTest) {
