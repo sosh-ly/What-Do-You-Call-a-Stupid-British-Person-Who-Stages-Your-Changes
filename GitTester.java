@@ -23,7 +23,11 @@ public class GitTester {
 
         Git testGit5 = new Git("testFolder"); // try to create git in testFolder
         System.out.println(repoExists(testGit5));
-        cleanup (testGit5);
+
+        System.out.println(testGit5.genSHA1("hello"));
+
+        cleanup(testGit5);
+
     }
 
     public static boolean repoExists(Git gitToTest) {
