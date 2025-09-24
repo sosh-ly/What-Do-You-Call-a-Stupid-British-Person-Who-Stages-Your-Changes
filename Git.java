@@ -1,5 +1,7 @@
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -9,12 +11,14 @@ public class Git {
     private File objects;
     private File index;
     private File HEAD;
+    private String path;
 
     public Git() throws IOException {
         git = new File("git");
-        objects = new File(git.getAbsolutePath() + File.separator + "objects");
-        index = new File(git.getAbsolutePath() + File.separator + "index");
-        HEAD = new File(git.getAbsolutePath() + File.separator + "HEAD");
+        path = git.getAbsolutePath();
+        objects = new File(path + File.separator + "objects");
+        index = new File(path + File.separator + "index");
+        HEAD = new File(path + File.separator + "HEAD");
         initialize();
     }
 
@@ -25,9 +29,10 @@ public class Git {
         } else {
             git = new File(pathName + File.separator + "git");
         }
-        objects = new File(git.getAbsolutePath() + File.separator + "objects");
-        index = new File(git.getAbsolutePath() + File.separator + "index");
-        HEAD = new File(git.getAbsolutePath() + File.separator + "HEAD");
+        path = git.getAbsolutePath();
+        objects = new File(path + File.separator + "objects");
+        index = new File(path + File.separator + "index");
+        HEAD = new File(path + File.separator + "HEAD");
         initialize();
     }
 
@@ -52,7 +57,7 @@ public class Git {
     }
 
     public String getPath() {
-        return git.getAbsolutePath();
+        return path;
     }
 
     public String genSHA1(String input) {
@@ -83,6 +88,19 @@ public class Git {
         // For specifying wrong message digest algorithms
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
-        } 
+        }
+    }
+
+    public String genSHA1(File file) throws IOException {
+        return genSHA1(Files.readString(file.toPath()));
+    }
+
+    public void genBLOB(File file) throws IOException {
+        String hash = genSHA1(Files.readString(file.toPath()));
+        File obj = new File(path + File.separator + "objects" + File.separator + hash);
+        if (!obj.exists()) {
+            obj.createNewFile();
+        }
+        Files.copy(file.toPath(), obj.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 }

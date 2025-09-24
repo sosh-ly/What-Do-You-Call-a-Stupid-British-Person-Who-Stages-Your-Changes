@@ -26,7 +26,7 @@ public class GitTester {
 
         System.out.println(testGit5.genSHA1("hello"));
 
-        cleanup(testGit5);
+        testGit5.genBLOB(new File("testFile.txt"));
 
     }
 
