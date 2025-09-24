@@ -1,5 +1,4 @@
 import java.io.*;
-import java.nio.file.*;
 
 public class Git {
 
@@ -9,19 +8,20 @@ public class Git {
     private File HEAD;
 
     public Git() throws IOException {
-        git = new File(".aGit");
+        git = new File("git");
         objects = new File(git.getAbsolutePath() + File.separator + "objects");
         index = new File(git.getAbsolutePath() + File.separator + "index");
         HEAD = new File(git.getAbsolutePath() + File.separator + "HEAD");
         initialize();
     }
 
-    public Git(String folderName) throws IOException {
-        if (folderName.equals("git")) {
-            System.out.println("\".git\" folder already exists, using \".aGit\" instead.");
-            folderName = "aGit";
+    public Git(String pathName) throws IOException {
+        if (!new File(pathName).exists()) {
+            System.out.println("The given path doesn't exist. Using default instead.");
+            git = new File("git");
+        } else {
+            git = new File(pathName + File.separator + "git");
         }
-        git = new File("."+folderName);
         objects = new File(git.getAbsolutePath() + File.separator + "objects");
         index = new File(git.getAbsolutePath() + File.separator + "index");
         HEAD = new File(git.getAbsolutePath() + File.separator + "HEAD");
@@ -35,8 +35,6 @@ public class Git {
             if (!git.exists()) {
                 git.mkdir();
             }
-            Path path = git.toPath();
-            Files.setAttribute(path, "dos:hidden", true);
             if (!objects.exists()) {
                 objects.mkdir();
             }
