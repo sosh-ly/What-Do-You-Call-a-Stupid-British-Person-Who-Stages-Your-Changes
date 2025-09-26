@@ -42,12 +42,12 @@ public class GitTester {
         testGit5.addFile(new File("testFiles" + File.separator + "testFile2.txt"));
         testGit5.addFile(new File("testFiles" + File.separator + "testFile3.txt"));
 
-        System.out.println(BLOBSExist(testGit5, new File("testFiles"))); // test if
-                                                                         // BLOB files
-                                                                         // were made
-                                                                         // correctly
+        System.out.println(BLOBSExist(testGit5, new File("testFiles"))); // test if BLOB files were made correctly
 
         System.out.println(checkIndicies(testGit5, fileFolder));
+
+        cleanupGit(testGit5); // clean up BLOB files in objects and index
+        cleanup(fileFolder); // delete folder of test files
 
     }
 
@@ -121,5 +121,15 @@ public class GitTester {
         File file = new File(name);
         file.createNewFile();
         Files.write(file.toPath(), contents.getBytes());
+    }
+
+    public static void cleanupGit(Git gitToClean) throws IOException {
+        for (File blob : (new File(gitToClean.getPath() + File.separator + "objects")).listFiles()) {
+            blob.delete();
+        }
+        File index = new File(gitToClean.getPath() + File.separator + "index");
+        index.delete();
+        index.createNewFile();
+
     }
 }

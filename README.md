@@ -11,4 +11,5 @@ GitTester:
 Method to verify if all required repo files were initialized (.repoExists)
 Method that iterates through folder and removes all files, including anything potentially added later in project process (.cleanup)
 Multiple tests to see if different cases produce errors. Details documented in tester.
+Large test for creating BLOB files and indexes. Details in tester, and methods implemented to make any future testing easier.
 
