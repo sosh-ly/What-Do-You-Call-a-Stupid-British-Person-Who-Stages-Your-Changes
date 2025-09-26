@@ -104,4 +104,21 @@ public class Git {
         }
         Files.copy(file.toPath(), obj.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
+
+    public void addIndex(File file) throws IOException {
+        String input = file.getName();
+        String toAdd = "";
+        String contents = Files.readString(file.toPath());
+        if (Files.readString(index.toPath()).equals("")) {
+            toAdd = genSHA1(contents) + " " + input;
+        } else {
+            toAdd = "\n" + genSHA1(contents) + " " + input;
+        }
+        Files.write(index.toPath(), toAdd.getBytes(), StandardOpenOption.APPEND);
+    }
+
+    public void addFile(File file) throws IOException {
+        genBLOB(file);
+        addIndex(file);
+    }
 }
