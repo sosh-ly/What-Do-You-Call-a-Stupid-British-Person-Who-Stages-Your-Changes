@@ -48,6 +48,8 @@ public class GitTester {
 
         cleanupGit(testGit5); // clean up BLOB files in objects and index
         cleanup(fileFolder); // delete folder of test files
+        
+        cleanup(testGit5);
 
     }
 
