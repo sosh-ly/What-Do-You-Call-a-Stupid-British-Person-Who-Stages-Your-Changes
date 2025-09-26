@@ -2,6 +2,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -60,7 +61,7 @@ public class Git {
         return path;
     }
 
-    public String genSHA1(String input) {
+    public static String genSHA1(String input) {
         try {
             // getInstance() method is called with algorithm SHA-1
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -91,7 +92,7 @@ public class Git {
         }
     }
 
-    public String genSHA1(File file) throws IOException {
+    public static String genSHA1(File file) throws IOException {
         return genSHA1(Files.readString(file.toPath()));
     }
 
