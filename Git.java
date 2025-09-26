@@ -106,7 +106,7 @@ public class Git {
     }
 
     public void addIndex(File file) throws IOException {
-        String input = file.getName();
+        String input = file.getPath().toString();
         String toAdd = "";
         String contents = Files.readString(file.toPath());
         if (Files.readString(index.toPath()).equals("")) {
