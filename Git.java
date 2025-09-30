@@ -121,4 +121,8 @@ public class Git {
         genBLOB(file);
         addIndex(file);
     }
+
+    public void constructTreesFromIndex() {
+        
+    }
 }
