@@ -1,5 +1,6 @@
 import java.io.*;
 import java.math.BigInteger;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -151,7 +152,9 @@ public class Git {
 
             br.close();
 
-            Files.copy(tempWorkingDirectory, workingDirectory);
+            FileOutputStream fos = new FileOutputStream(tempWorkingDirectory)
+            Files.copy(tempWorkingDirectory.toPath(), fos);
+            fos.close();
         }
 
         bw.close();
