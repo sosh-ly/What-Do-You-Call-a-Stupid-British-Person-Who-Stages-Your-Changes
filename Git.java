@@ -1,6 +1,6 @@
 import java.io.*;
 import java.math.BigInteger;
-import java.io.FileOutputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -133,36 +133,61 @@ public class Git {
     public void constructTreesFromIndex() throws IOException {
         File workingDirectory = createWorkingDirectory();
         File tempWorkingDirectory = new File("tempWD");
-        BufferedWriter bw = new BufferedWriter(new FileWriter(tempWorkingDirectory));
 
         while (Files.readAllLines(workingDirectory.toPath()).size() > 1) {
             BufferedReader br = new BufferedReader(new FileReader(workingDirectory));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(tempWorkingDirectory));
             ArrayList<String> initial = genParsedEntry(br.readLine());
+            ArrayList<ArrayList<String>> aboutToBecomeATree = new ArrayList<>();
+            aboutToBecomeATree.add(initial);
 
             while (br.ready()) {
-                ArrayList<ArrayList<String>> aboutToBecomeATree = new ArrayList<>();
                 String line = br.readLine();
                 ArrayList<String> parsedLine = genParsedEntry(line);
-                if (parsedLine.size() == initial.size()) {
+
+                if (parsedLine.size() == initial.size()
+                        && initial.subList(2, initial.size() - 1).equals(parsedLine.subList(2, initial.size() - 1))) {
                     aboutToBecomeATree.add(parsedLine);
-                } else {
-                    bw.write(line + "\n");
                 }
+
+                else {
+                    if (br.ready()) {
+                        // presumably if this is not the last line
+                        bw.write(line + "\n");
+                    } else {
+                        bw.write(line);
+                    }
+                    bw.flush();
+                }
+
             }
 
             br.close();
+            bw.close();
 
-            FileOutputStream fos = new FileOutputStream(tempWorkingDirectory)
+            genTree(aboutToBecomeATree);
+
+            FileOutputStream fos = new FileOutputStream(workingDirectory);
             Files.copy(tempWorkingDirectory.toPath(), fos);
             fos.close();
+            tempWorkingDirectory.delete();
         }
 
-        bw.close();
-
+        // workingDirectory.delete();
     }
 
-    private File constructTree(String directorypath) {
-        return null;
+    private void genTree(ArrayList<ArrayList<String>> aboutToBecomeATree) throws IOException {
+        String contents = "";
+        for (ArrayList<String> line : aboutToBecomeATree) {
+            contents += line.getFirst() + " " + line.get(1) + " " + line.getLast() + "\n";
+        }
+        contents = contents.substring(0, contents.length() - 1);
+
+        File temp = new File("temp");
+        Files.write(temp.toPath(), contents.getBytes());
+
+        genBLOB(temp);
+        temp.delete();
     }
 
     /*
