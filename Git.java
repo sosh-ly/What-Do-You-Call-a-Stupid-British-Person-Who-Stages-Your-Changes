@@ -145,27 +145,32 @@ public class Git {
                 String line = br.readLine();
                 ArrayList<String> parsedLine = genParsedEntry(line);
 
+                if (parsedLine.size() == initial.size()) {
+                    System.out.println(initial.subList(2, initial.size() - 1));
+                    System.out.println(parsedLine.subList(2, initial.size() - 1));
+                }
+
                 if (parsedLine.size() == initial.size()
                         && initial.subList(2, initial.size() - 1).equals(parsedLine.subList(2, initial.size() - 1))) {
                     aboutToBecomeATree.add(parsedLine);
                 }
 
                 else {
-                    if (br.ready()) {
-                        // presumably if this is not the last line
-                        bw.write(line + "\n");
-                    } else {
-                        bw.write(line);
-                    }
+                    bw.write(line + "\n");
                     bw.flush();
                 }
 
             }
 
+            File temp = genTreeFile(aboutToBecomeATree);
+            String directoryName = initial.get(initial.size() - 2);
+            if (initial.size() - 2 <= 1) {
+                directoryName = "(root)";
+            }
+            bw.write("tree " + genSHA1(temp) + " " + directoryName);
+
             br.close();
             bw.close();
-
-            genTree(aboutToBecomeATree);
 
             FileOutputStream fos = new FileOutputStream(workingDirectory);
             Files.copy(tempWorkingDirectory.toPath(), fos);
@@ -173,10 +178,10 @@ public class Git {
             tempWorkingDirectory.delete();
         }
 
-        // workingDirectory.delete();
+        workingDirectory.delete();
     }
 
-    private void genTree(ArrayList<ArrayList<String>> aboutToBecomeATree) throws IOException {
+    private File genTreeFile(ArrayList<ArrayList<String>> aboutToBecomeATree) throws IOException {
         String contents = "";
         for (ArrayList<String> line : aboutToBecomeATree) {
             contents += line.getFirst() + " " + line.get(1) + " " + line.getLast() + "\n";
@@ -187,7 +192,13 @@ public class Git {
         Files.write(temp.toPath(), contents.getBytes());
 
         genBLOB(temp);
+
+        String hash = genSHA1(contents);
+
         temp.delete();
+
+        // The path to the tree file
+        return new File(path + File.separator + "objects" + File.separator + hash);
     }
 
     /*
