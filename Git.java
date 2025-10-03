@@ -128,6 +128,7 @@ public class Git {
      */
     public void constructTreesFromIndex() throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(index.getPath()));
+        createWorkingDirectory();
 
         while (br.ready()) {
             String[] lineInIndex = genParsedIndexEntry(br.readLine());
@@ -143,6 +144,30 @@ public class Git {
 
     private File constructTree(String directorypath) {
         return null;
+    }
+
+    /*
+     * Makes the working directory from the index
+     * Returns the WD File so that it can be deleted later
+     */
+    private File createWorkingDirectory() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(index));
+        File workingDirectory = new File("WD");
+        workingDirectory.createNewFile();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(workingDirectory, true));
+        int i = 0;
+
+        while (br.ready()) {
+            if (i != 0) {
+                bw.write("\n");
+            }
+            bw.write("blob " + br.readLine());
+            i++;
+        }
+
+        br.close();
+        bw.close();
+        return workingDirectory;
     }
 
     /*
