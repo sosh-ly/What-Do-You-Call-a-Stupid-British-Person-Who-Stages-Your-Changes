@@ -126,11 +126,31 @@ public class Git {
      * Reads the current state of the index file and makes a tree file for any
      * directory within it
      */
-    public void constructTreesFromIndex() {
-        
+    public void constructTreesFromIndex() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(index.getPath()));
+
+        while (br.ready()) {
+            String[] lineInIndex = genParsedIndexEntry(br.readLine());
+            String lineInWorkingDirectory = "blob " + lineInIndex[0] + " " + lineInIndex[lineInIndex.length - 1];
+            File temp = new File("temp.txt");
+            Files.write(temp.toPath(), lineInWorkingDirectory.getBytes());
+            genBLOB(temp);
+            temp.delete();
+        }
+
+        br.close();
     }
 
-    private File constructTree(String pathname) {
-        
+    private File constructTree(String directorypath) {
+        return null;
+    }
+
+    /*
+     * Divides an index entry in the form of
+     * hash path -> [hash, dir1, dir2, ..., dir(n), filename]
+     * https://tinyurl.com/59dtacma
+     */
+    private String[] genParsedIndexEntry(String line) {
+        return line.split("[ " + File.separator + "]");
     }
 }
