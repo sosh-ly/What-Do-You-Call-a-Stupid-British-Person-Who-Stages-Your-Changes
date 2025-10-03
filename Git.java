@@ -163,9 +163,14 @@ public class Git {
             }
 
             File temp = genTreeFile(aboutToBecomeATree);
-            String directoryName = initial.get(initial.size() - 2);
-            if (initial.size() - 2 <= 1) {
-                directoryName = "(root)";
+            String directoryName = "";
+            if (initial.subList(2, initial.size() - 1).isEmpty()) {
+                break;
+            } else {
+                for (String dir : initial.subList(2, initial.size() - 1)) {
+                    directoryName += dir + File.separator;
+                }
+                directoryName = directoryName.substring(0, directoryName.length() - 1);
             }
             bw.write("tree " + genSHA1(temp) + " " + directoryName);
 
@@ -178,7 +183,60 @@ public class Git {
             tempWorkingDirectory.delete();
         }
 
+        alphabetizeLines(workingDirectory);
+        genBLOB(workingDirectory);
         workingDirectory.delete();
+        tempWorkingDirectory.delete();
+    }
+
+    private void alphabetizeLines(File file) throws IOException {
+        File temp = new File("tempAlphabetizer");
+        ArrayList<ArrayList<String>> entries = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+
+        // This sorts all of the entries by alphabetical order of the filename
+        while (br.ready()) {
+            ArrayList<String> parsedEntry = genParsedEntry(br.readLine());
+
+            if (entries.size() == 0) {
+                entries.add(parsedEntry);
+            } else {
+                for (int i = 0; i < entries.size(); i++) {
+                    if (parsedEntry.getLast().compareTo(entries.get(i).getLast()) < 0) {
+                        entries.add(i, parsedEntry);
+                        break;
+                    } else if (i == entries.size() - 1) {
+                        entries.add(parsedEntry);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (ArrayList<String> entry : entries) {
+
+            // they should all have three parts here.
+            // should find a better way to write this tbh
+            // a for-loop would be good if it wasnt 1:47 am fri oct 3
+            // [type, hash, filename]
+            bw.write(entry.getFirst() + " " + entry.get(1) + " " + entry.getLast());
+
+            if (entry != entries.getLast()) {
+                bw.newLine();
+            }
+
+            bw.flush();
+
+        }
+
+        FileOutputStream fos = new FileOutputStream(file);
+        Files.copy(temp.toPath(), fos);
+        fos.close();
+
+        br.close();
+        bw.close();
+        temp.delete();
     }
 
     private File genTreeFile(ArrayList<ArrayList<String>> aboutToBecomeATree) throws IOException {
@@ -191,13 +249,14 @@ public class Git {
         File temp = new File("temp");
         Files.write(temp.toPath(), contents.getBytes());
 
+        alphabetizeLines(temp);
         genBLOB(temp);
 
-        String hash = genSHA1(contents);
+        String hash = genSHA1(Files.readString(temp.toPath()));
 
         temp.delete();
 
-        // The path to the tree file
+        // The path to the tree file in the objects directory
         return new File(path + File.separator + "objects" + File.separator + hash);
     }
 
@@ -240,6 +299,7 @@ public class Git {
         }
 
         // This writes all of the entries to the WD in the order given above
+        // Currently, they look like [[hash, dir1, ..., dir(n), filename], ...]
         for (ArrayList<String> entry : entries) {
             String path = "";
 
