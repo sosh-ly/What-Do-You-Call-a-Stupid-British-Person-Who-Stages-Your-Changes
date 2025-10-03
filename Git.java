@@ -5,6 +5,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Git {
 
@@ -131,8 +133,8 @@ public class Git {
         createWorkingDirectory();
 
         while (br.ready()) {
-            String[] lineInIndex = genParsedIndexEntry(br.readLine());
-            String lineInWorkingDirectory = "blob " + lineInIndex[0] + " " + lineInIndex[lineInIndex.length - 1];
+            ArrayList<String> lineInIndex = genParsedIndexEntry(br.readLine());
+            String lineInWorkingDirectory = "blob " + lineInIndex.getFirst() + " " + lineInIndex.getLast();
             File temp = new File("temp.txt");
             Files.write(temp.toPath(), lineInWorkingDirectory.getBytes());
             genBLOB(temp);
@@ -149,20 +151,56 @@ public class Git {
     /*
      * Makes the working directory from the index
      * Returns the WD File so that it can be deleted later
+     * 
+     * Also sorts the working directory in alphabetical order so that a stack can be
+     * used to collapse it
      */
     private File createWorkingDirectory() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(index));
+        // All the entries that will be written to the WD
+        ArrayList<ArrayList<String>> entries = new ArrayList<>();
+
+        // The working directory
         File workingDirectory = new File("WD");
         workingDirectory.createNewFile();
+
+        // Writer n reader
+        BufferedReader br = new BufferedReader(new FileReader(index));
         BufferedWriter bw = new BufferedWriter(new FileWriter(workingDirectory, true));
-        int i = 0;
 
         while (br.ready()) {
-            if (i != 0) {
-                bw.write("\n");
+            ArrayList<String> parsedEntry = genParsedIndexEntry(br.readLine());
+
+            if (entries.size() == 0) {
+                entries.add(parsedEntry);
+            } else {
+                for (int i = 0; i < entries.size(); i++) {
+                    if (parsedEntry.size() > entries.get(i).size()) {
+                        entries.add(i, parsedEntry);
+                        break;
+                    }
+                    else if (i == entries.size() - 1) {
+                        entries.add(parsedEntry);
+                        break;
+                    }
+                }
             }
-            bw.write("blob " + br.readLine());
-            i++;
+        }
+
+        for (ArrayList<String> entry : entries) {
+            String path = "";
+
+            for (int i = 1; i < entry.size(); i++) {
+                path += entry.get(i) + File.separator;
+            }
+
+            path = path.substring(0, path.length() - 1);
+
+            bw.write("blob " + entry.getFirst() + " " + path);
+
+            if (entry != entries.getLast()) {
+                bw.newLine();
+            }
+
         }
 
         br.close();
@@ -171,11 +209,11 @@ public class Git {
     }
 
     /*
-     * Divides an index entry in the form of
+     * Converts a line in the index in the form of
      * hash path -> [hash, dir1, dir2, ..., dir(n), filename]
      * https://tinyurl.com/59dtacma
      */
-    private String[] genParsedIndexEntry(String line) {
-        return line.split("[ " + File.separator + "]");
+    private ArrayList<String> genParsedIndexEntry(String line) {
+        return new ArrayList<String>(Arrays.asList(line.split("[ " + File.separator + "]")));
     }
 }
