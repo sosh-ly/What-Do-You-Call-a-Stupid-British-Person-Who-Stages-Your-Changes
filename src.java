@@ -9,9 +9,9 @@ public class src {
 
         testGit.addFile(new File("testFileSystem/a.txt"));
         testGit.addFile(new File("testFileSystem/b.txt"));
+        testGit.addFile(new File("testFileSystem/d/d.txt"));
         testGit.addFile(new File("testFileSystem/c/c1.txt"));
         testGit.addFile(new File("testFileSystem/c/c2.txt"));
-        testGit.addFile(new File("testFileSystem/d/d.txt"));
         testGit.addFile(new File("testFileSystem/d/e.txt"));
         testGit.addFile(new File("testFileSystem/d/f.txt"));
         testGit.addFile(new File("testFileSystem/d/g.txt"));

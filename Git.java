@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Stack;
 
 public class Git {
 
@@ -129,19 +130,32 @@ public class Git {
      * directory within it
      */
     public void constructTreesFromIndex() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(index.getPath()));
-        createWorkingDirectory();
+        File workingDirectory = createWorkingDirectory();
+        File tempWorkingDirectory = new File("tempWD");
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tempWorkingDirectory));
 
-        while (br.ready()) {
-            ArrayList<String> lineInIndex = genParsedIndexEntry(br.readLine());
-            String lineInWorkingDirectory = "blob " + lineInIndex.getFirst() + " " + lineInIndex.getLast();
-            File temp = new File("temp.txt");
-            Files.write(temp.toPath(), lineInWorkingDirectory.getBytes());
-            genBLOB(temp);
-            temp.delete();
+        while (Files.readAllLines(workingDirectory.toPath()).size() > 1) {
+            BufferedReader br = new BufferedReader(new FileReader(workingDirectory));
+            ArrayList<String> initial = genParsedEntry(br.readLine());
+
+            while (br.ready()) {
+                ArrayList<ArrayList<String>> aboutToBecomeATree = new ArrayList<>();
+                String line = br.readLine();
+                ArrayList<String> parsedLine = genParsedEntry(line);
+                if (parsedLine.size() == initial.size()) {
+                    aboutToBecomeATree.add(parsedLine);
+                } else {
+                    bw.write(line + "\n");
+                }
+            }
+
+            br.close();
+
+            Files.copy(tempWorkingDirectory, workingDirectory);
         }
 
-        br.close();
+        bw.close();
+
     }
 
     private File constructTree(String directorypath) {
@@ -167,8 +181,9 @@ public class Git {
         BufferedReader br = new BufferedReader(new FileReader(index));
         BufferedWriter bw = new BufferedWriter(new FileWriter(workingDirectory, true));
 
+        // This sorts all of the entries by length of path
         while (br.ready()) {
-            ArrayList<String> parsedEntry = genParsedIndexEntry(br.readLine());
+            ArrayList<String> parsedEntry = genParsedEntry(br.readLine());
 
             if (entries.size() == 0) {
                 entries.add(parsedEntry);
@@ -177,8 +192,7 @@ public class Git {
                     if (parsedEntry.size() > entries.get(i).size()) {
                         entries.add(i, parsedEntry);
                         break;
-                    }
-                    else if (i == entries.size() - 1) {
+                    } else if (i == entries.size() - 1) {
                         entries.add(parsedEntry);
                         break;
                     }
@@ -186,6 +200,7 @@ public class Git {
             }
         }
 
+        // This writes all of the entries to the WD in the order given above
         for (ArrayList<String> entry : entries) {
             String path = "";
 
@@ -211,9 +226,13 @@ public class Git {
     /*
      * Converts a line in the index in the form of
      * hash path -> [hash, dir1, dir2, ..., dir(n), filename]
+     * 
+     * Also converts a line in the WD in the form of
+     * type hash path -> [type, hash, dir1, dir2, ..., dir(n), filename]
+     * 
      * https://tinyurl.com/59dtacma
      */
-    private ArrayList<String> genParsedIndexEntry(String line) {
+    private ArrayList<String> genParsedEntry(String line) {
         return new ArrayList<String>(Arrays.asList(line.split("[ " + File.separator + "]")));
     }
 }
