@@ -122,7 +122,15 @@ public class Git {
         addIndex(file);
     }
 
+    /*
+     * Reads the current state of the index file and makes a tree file for any
+     * directory within it
+     */
     public void constructTreesFromIndex() {
+        
+    }
+
+    private File constructTree(String pathname) {
         
     }
 }
