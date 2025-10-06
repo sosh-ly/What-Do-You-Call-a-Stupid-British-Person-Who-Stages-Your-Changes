@@ -15,11 +15,14 @@ public class src {
         testGit.addFile(new File("testFileSystem/c/c2.txt"));
         testGit.addFile(new File("testFileSystem/d/e.txt"));
         testGit.addFile(new File("testFileSystem/d/f.txt"));
+        testGit.addFile(new File(".vscode/settings.json"));
         testGit.addFile(new File("testFileSystem/d/g.txt"));
         testGit.addFile(new File("testFileSystem/d/h.txt"));
         testGit.addFile(new File("testFileSystem/d/e/bye.txt"));
         testGit.addFile(new File("testFileSystem/d/e/hello.txt"));
         testGit.addFile(new File("src.java"));
+        testGit.addFile(new File("README.md"));
+        testGit.addFile(new File("SECURITY.md"));
 
         testGit.constructTreesFromIndex();
 

@@ -1,6 +1,5 @@
 import java.io.*;
 import java.math.BigInteger;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -8,7 +7,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Stack;
 
 public class Git {
 
@@ -137,37 +135,33 @@ public class Git {
         while (Files.readAllLines(workingDirectory.toPath()).size() > 1) {
             BufferedReader br = new BufferedReader(new FileReader(workingDirectory));
             BufferedWriter bw = new BufferedWriter(new FileWriter(tempWorkingDirectory));
-            ArrayList<String> initial = genParsedEntry(br.readLine());
-            ArrayList<ArrayList<String>> aboutToBecomeATree = new ArrayList<>();
-            aboutToBecomeATree.add(initial);
+            ArrayList<String> initialEntry = genParsedEntry(br.readLine());
+            ArrayList<ArrayList<String>> entriesAboutToBecomeATree = new ArrayList<>();
+            entriesAboutToBecomeATree.add(initialEntry);
 
             while (br.ready()) {
-                String line = br.readLine();
-                ArrayList<String> parsedLine = genParsedEntry(line);
+                String currentEntry = br.readLine();
+                ArrayList<String> parsedEntry = genParsedEntry(currentEntry);
 
-                if (parsedLine.size() == initial.size()) {
-                    System.out.println(initial.subList(2, initial.size() - 1));
-                    System.out.println(parsedLine.subList(2, initial.size() - 1));
-                }
-
-                if (parsedLine.size() == initial.size()
-                        && initial.subList(2, initial.size() - 1).equals(parsedLine.subList(2, initial.size() - 1))) {
-                    aboutToBecomeATree.add(parsedLine);
+                if (parsedEntry.size() == initialEntry.size()
+                        && initialEntry.subList(2, initialEntry.size() - 1)
+                                .equals(parsedEntry.subList(2, initialEntry.size() - 1))) {
+                    entriesAboutToBecomeATree.add(parsedEntry);
                 }
 
                 else {
-                    bw.write(line + "\n");
+                    bw.write(currentEntry + "\n");
                     bw.flush();
                 }
 
             }
 
-            File temp = genTreeFile(aboutToBecomeATree);
+            File temp = genTreeFile(entriesAboutToBecomeATree);
             String directoryName = "";
-            if (initial.subList(2, initial.size() - 1).isEmpty()) {
+            if (initialEntry.subList(2, initialEntry.size() - 1).isEmpty()) {
                 break;
             } else {
-                for (String dir : initial.subList(2, initial.size() - 1)) {
+                for (String dir : initialEntry.subList(2, initialEntry.size() - 1)) {
                     directoryName += dir + File.separator;
                 }
                 directoryName = directoryName.substring(0, directoryName.length() - 1);
@@ -183,13 +177,13 @@ public class Git {
             tempWorkingDirectory.delete();
         }
 
-        alphabetizeLines(workingDirectory);
+        alphabetizeLinesByFileName(workingDirectory);
         genBLOB(workingDirectory);
         workingDirectory.delete();
         tempWorkingDirectory.delete();
     }
 
-    private void alphabetizeLines(File file) throws IOException {
+    private void alphabetizeLinesByFileName(File file) throws IOException {
         File temp = new File("tempAlphabetizer");
         ArrayList<ArrayList<String>> entries = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -249,7 +243,7 @@ public class Git {
         File temp = new File("temp");
         Files.write(temp.toPath(), contents.getBytes());
 
-        alphabetizeLines(temp);
+        alphabetizeLinesByFileName(temp);
         genBLOB(temp);
 
         String hash = genSHA1(Files.readString(temp.toPath()));
