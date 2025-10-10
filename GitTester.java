@@ -46,10 +46,12 @@ public class GitTester {
 
         System.out.println(checkIndicies(testGit5, fileFolder));
 
-        cleanupGit(testGit5); // clean up BLOB files in objects and index
-        cleanup(fileFolder); // delete folder of test files
+       // cleanupGit(testGit5); // clean up BLOB files in objects and index
+        //cleanup(fileFolder); // delete folder of test files
         
-        cleanup(testGit5);
+        //cleanup(testGit5);
+        Git.commit("doug", "this is my message");
+        Git.commit("sally", "this is Sally's message!");
 
     }
 
@@ -132,6 +134,8 @@ public class GitTester {
         File index = new File(gitToClean.getPath() + File.separator + "index");
         index.delete();
         index.createNewFile();
-
     }
+
+    
+    
 }

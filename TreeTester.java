@@ -26,6 +26,8 @@ public class TreeTester {
 
         testGit.constructTreesFromIndex();
 
+        // Git.commit("doug", "this is my message");
+
         System.out.println(GitTester.BLOBSExist(testGit, new File("testFileSystem/d/e")));
         
     }
