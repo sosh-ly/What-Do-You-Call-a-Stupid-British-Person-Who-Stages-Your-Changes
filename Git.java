@@ -58,7 +58,7 @@ public class Git {
             if (!HEAD.exists()) {
                 HEAD.createNewFile();
             }
-           System.out.println("Git Repository Created");
+            System.out.println("Git Repository Created");
         }
     }
 
@@ -102,34 +102,29 @@ public class Git {
     }
 
     public void genBLOB(File file) throws IOException {
-            file.createNewFile(); // Joya added this 
-            String hash = genSHA1(Files.readString(file.toPath()));
-            File obj = new File(path + File.separator + "objects" + File.separator + hash);
-            if (!obj.exists()) {
-                obj.createNewFile();
-            }
-            Files.copy(file.toPath(), obj.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        
+        String hash = genSHA1(Files.readString(file.toPath()));
+        File obj = new File(path + File.separator + "objects" + File.separator + hash);
+        if (!obj.exists()) {
+            obj.createNewFile();
+        }
+        Files.copy(file.toPath(), obj.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public void addIndex(File file) throws IOException {
-            String input = file.getPath().toString();
-            String toAdd = "";
-            String contents = Files.readString(file.toPath());
-            if (Files.readString(index.toPath()).equals("")) {
-                toAdd = genSHA1(contents) + " " + input;
-            } else {
-                toAdd = "\n" + genSHA1(contents) + " " + input;
-            }
-            Files.write(index.toPath(), toAdd.getBytes(), StandardOpenOption.APPEND);
-        
+        String input = file.getPath().toString();
+        String toAdd = "";
+        String contents = Files.readString(file.toPath());
+        if (Files.readString(index.toPath()).equals("")) {
+            toAdd = genSHA1(contents) + " " + input;
+        } else {
+            toAdd = "\n" + genSHA1(contents) + " " + input;
+        }
+        Files.write(index.toPath(), toAdd.getBytes(), StandardOpenOption.APPEND);
     }
 
     public void addFile(File file) throws IOException {
-        if (file.exists() == false) { // Joya added this 
-            genBLOB(file);
-            addIndex(file);
-        }
+        genBLOB(file);
+        addIndex(file);
     }
 
     /*
@@ -338,8 +333,8 @@ public class Git {
      * https://tinyurl.com/59dtacma
      */
     private ArrayList<String> genParsedEntry(String line) {
-       // System.out.println(line);
-        //System.out.println(Arrays.asList(line.split("[ \\\\]")));
+        System.out.println(line);
+        System.out.println(Arrays.asList(line.split("[ \\\\]")));
         return new ArrayList<String>(Arrays.asList(line.split("[ \\\\]")));
     }
 
@@ -351,11 +346,6 @@ public class Git {
         Date date = new Date();
         String HeadFileLoc = "git/HEAD";
         FileReader reader = new FileReader(HeadFileLoc);
-        if (commits.size() == 0) {
-            BufferedWriter writer0 = new BufferedWriter(new FileWriter(HeadFileLoc));
-            writer0.write("");
-            writer0.close();
-        }
         if (reader.read() == -1) {
             // step 1: gather info for commit 
             String infoForCommit = "";
@@ -384,7 +374,6 @@ public class Git {
         }
         else {
             // step 1:
-            System.out.println(commits.size());
             String HashOfPrevCommit = commits.getLast().toString();
             // step 2: 
             String infoForCommit = "";
