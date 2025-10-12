@@ -4,7 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class GitTester {
+public class TesterGit {
     public static void main(String[] args) throws IOException {
         Git testGit = new Git(); // create new Git to test
         System.out.println(repoExists(testGit));
@@ -46,10 +46,12 @@ public class GitTester {
 
         System.out.println(checkIndicies(testGit5, fileFolder));
 
-        cleanupGit(testGit5); // clean up BLOB files in objects and index
+       cleanupGit(testGit5); // clean up BLOB files in objects and index
         cleanup(fileFolder); // delete folder of test files
         
         cleanup(testGit5);
+        // Git.commit("doug", "this is my message");
+        // Git.commit("sally", "this is Sally's message!");
 
     }
 
@@ -132,6 +134,8 @@ public class GitTester {
         File index = new File(gitToClean.getPath() + File.separator + "index");
         index.delete();
         index.createNewFile();
-
     }
+
+    
+    
 }

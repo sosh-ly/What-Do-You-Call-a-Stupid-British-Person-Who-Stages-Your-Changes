@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Date;
 
 public class Git {
 
@@ -15,6 +17,7 @@ public class Git {
     private File index;
     private File HEAD;
     private String path;
+    private static LinkedList commits = new LinkedList<String>();
 
     public Git() throws IOException {
         git = new File("git");
@@ -55,7 +58,7 @@ public class Git {
             if (!HEAD.exists()) {
                 HEAD.createNewFile();
             }
-            System.out.println("Git Repository Created");
+           System.out.println("Git Repository Created");
         }
     }
 
@@ -99,36 +102,41 @@ public class Git {
     }
 
     public void genBLOB(File file) throws IOException {
-        String hash = genSHA1(Files.readString(file.toPath()));
-        File obj = new File(path + File.separator + "objects" + File.separator + hash);
-        if (!obj.exists()) {
-            obj.createNewFile();
-        }
-        Files.copy(file.toPath(), obj.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            file.createNewFile(); // Joya added this 
+            String hash = genSHA1(Files.readString(file.toPath()));
+            File obj = new File(path + File.separator + "objects" + File.separator + hash);
+            if (!obj.exists()) {
+                obj.createNewFile();
+            }
+            Files.copy(file.toPath(), obj.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        
     }
 
     public void addIndex(File file) throws IOException {
-        String input = file.getPath().toString();
-        String toAdd = "";
-        String contents = Files.readString(file.toPath());
-        if (Files.readString(index.toPath()).equals("")) {
-            toAdd = genSHA1(contents) + " " + input;
-        } else {
-            toAdd = "\n" + genSHA1(contents) + " " + input;
-        }
-        Files.write(index.toPath(), toAdd.getBytes(), StandardOpenOption.APPEND);
+            String input = file.getPath().toString();
+            String toAdd = "";
+            String contents = Files.readString(file.toPath());
+            if (Files.readString(index.toPath()).equals("")) {
+                toAdd = genSHA1(contents) + " " + input;
+            } else {
+                toAdd = "\n" + genSHA1(contents) + " " + input;
+            }
+            Files.write(index.toPath(), toAdd.getBytes(), StandardOpenOption.APPEND);
+        
     }
 
     public void addFile(File file) throws IOException {
-        genBLOB(file);
-        addIndex(file);
+        if (file.exists() == false) { // Joya added this 
+            genBLOB(file);
+            addIndex(file);
+        }
     }
 
     /*
      * Reads the current state of the index file and makes a tree file for any
      * directory within it
      */
-    public void constructTreesFromIndex() throws IOException {
+    public String constructTreesFromIndex() throws IOException {
         File workingDirectory = createWorkingDirectory();
         File tempWorkingDirectory = new File("tempWD");
 
@@ -142,10 +150,10 @@ public class Git {
             while (br.ready()) {
                 String currentEntry = br.readLine();
                 ArrayList<String> parsedEntry = genParsedEntry(currentEntry);
-
                 if (parsedEntry.size() == initialEntry.size()
                         && initialEntry.subList(2, initialEntry.size() - 1)
                                 .equals(parsedEntry.subList(2, initialEntry.size() - 1))) {
+
                     entriesAboutToBecomeATree.add(parsedEntry);
                 }
 
@@ -178,9 +186,13 @@ public class Git {
         }
 
         alphabetizeLinesByFileName(workingDirectory);
+        String hashOfRoot = genSHA1(workingDirectory);
         genBLOB(workingDirectory);
         workingDirectory.delete();
         tempWorkingDirectory.delete();
+
+        return hashOfRoot;
+
     }
 
     private void alphabetizeLinesByFileName(File file) throws IOException {
@@ -197,7 +209,7 @@ public class Git {
                 entries.add(parsedEntry);
             } else {
                 for (int i = 0; i < entries.size(); i++) {
-                    if (parsedEntry.getLast().compareTo(entries.get(i).getLast()) < 0) {
+                    if (parsedEntry.get(parsedEntry.size() - 1).compareTo(entries.get(i).get(entries.get(i).size() - 1)) < 0) {
                         entries.add(i, parsedEntry);
                         break;
                     } else if (i == entries.size() - 1) {
@@ -214,9 +226,9 @@ public class Git {
             // should find a better way to write this tbh
             // a for-loop would be good if it wasnt 1:47 am fri oct 3
             // [type, hash, filename]
-            bw.write(entry.getFirst() + " " + entry.get(1) + " " + entry.getLast());
+            bw.write(entry.get(0) + " " + entry.get(1) + " " + entry.get(entry.size() - 1));
 
-            if (entry != entries.getLast()) {
+            if (entry != entries.get(entries.size() - 1)) {
                 bw.newLine();
             }
 
@@ -236,7 +248,7 @@ public class Git {
     private File genTreeFile(ArrayList<ArrayList<String>> aboutToBecomeATree) throws IOException {
         String contents = "";
         for (ArrayList<String> line : aboutToBecomeATree) {
-            contents += line.getFirst() + " " + line.get(1) + " " + line.getLast() + "\n";
+            contents += line.get(0) + " " + line.get(1) + " " + line.get(line.size() - 1) + "\n";
         }
         contents = contents.substring(0, contents.length() - 1);
 
@@ -303,9 +315,9 @@ public class Git {
 
             path = path.substring(0, path.length() - 1);
 
-            bw.write("blob " + entry.getFirst() + " " + path);
+            bw.write("blob " + entry.get(0) + " " + path);
 
-            if (entry != entries.getLast()) {
+            if (entry != entries.get(entries.size() -1)) {
                 bw.newLine();
             }
 
@@ -326,6 +338,77 @@ public class Git {
      * https://tinyurl.com/59dtacma
      */
     private ArrayList<String> genParsedEntry(String line) {
-        return new ArrayList<String>(Arrays.asList(line.split("[ " + File.separator + "]")));
+       // System.out.println(line);
+        //System.out.println(Arrays.asList(line.split("[ \\\\]")));
+        return new ArrayList<String>(Arrays.asList(line.split("[ \\\\]")));
     }
+
+    // Staging a commit method 
+    // returns a string of the commit's hash 
+    public String commit(String author, String message) throws IOException {
+        Git obj = new Git();
+        Date date = new Date();
+        String HeadFileLoc = "git/HEAD";
+        FileReader reader = new FileReader(HeadFileLoc);
+        if (commits.size() == 0) {
+            BufferedWriter writer0 = new BufferedWriter(new FileWriter(HeadFileLoc));
+            writer0.write("");
+            writer0.close();
+        }
+        if (reader.read() == -1) {
+            // step 1: gather info for commit 
+            String infoForCommit = "";
+            String TreeHash = obj.constructTreesFromIndex();
+            infoForCommit = infoForCommit + "tree hash:" + TreeHash + "\n" + "parent:" + "\n" + "author: "
+                    + author + "\n" + "date: " + date.getMonth() + "/" + date.getDate() + "/"+ date.getYear() + "\n" + "message: " + message;
+            // step 2: create hash of commit 
+            String hashOfCommit = genSHA1(infoForCommit);
+            commits.add(hashOfCommit);
+            // step 3: write hash of commit into Head File  
+            BufferedWriter writer = new BufferedWriter(new FileWriter(HeadFileLoc));
+            writer.write(hashOfCommit);
+            // step 5: creates a new file called hashOfCommit that has commit's content 
+            File commitFile = new File("git/objects/" + hashOfCommit);
+            commitFile.createNewFile();
+            BufferedWriter writer2 = new BufferedWriter(new FileWriter("git/objects/" + hashOfCommit));
+            writer2.write(infoForCommit);
+            System.out.println("number of elements in linked list: " + commits.size());
+            
+            
+            // step 6
+            reader.close();
+            writer.close();
+            writer2.close();
+            return hashOfCommit;
+        }
+        else {
+            // step 1:
+            System.out.println(commits.size());
+            String HashOfPrevCommit = commits.getLast().toString();
+            // step 2: 
+            String infoForCommit = "";
+            String TreeHash = obj.constructTreesFromIndex();
+            infoForCommit = infoForCommit + "tree hash:" + TreeHash + "\n" + "parent: " + HashOfPrevCommit + "\n"
+                    + "author: " + author + "\n" + "date: " + date.getMonth() + "/" + date.getDate() + "/" + date.getYear() +  "\n" + "message: " + message;
+            // Step 3: 
+            String hashOfThisCommit = genSHA1(infoForCommit);
+            // step4: 
+            commits.add(hashOfThisCommit);
+            // step 5: 
+            BufferedWriter writer = new BufferedWriter(new FileWriter(HeadFileLoc));
+            writer.write(hashOfThisCommit);
+             File commitFile = new File("git/objects/" + hashOfThisCommit);
+            commitFile.createNewFile();
+            BufferedWriter writer2 = new BufferedWriter(new FileWriter("git/objects/" + hashOfThisCommit));
+            writer2.write(infoForCommit);
+            // step 6: 
+            writer.close();
+            writer2.close();
+            return hashOfThisCommit;
+            
+        }
+    }
+    
+
+
 }
