@@ -150,10 +150,10 @@ public class Git {
             while (br.ready()) {
                 String currentEntry = br.readLine();
                 ArrayList<String> parsedEntry = genParsedEntry(currentEntry);
-
                 if (parsedEntry.size() == initialEntry.size()
                         && initialEntry.subList(2, initialEntry.size() - 1)
                                 .equals(parsedEntry.subList(2, initialEntry.size() - 1))) {
+
                     entriesAboutToBecomeATree.add(parsedEntry);
                 }
 
@@ -345,8 +345,7 @@ public class Git {
 
     // Staging a commit method 
     // returns a string of the commit's hash 
-    // to-do: IMPORT DATE CLASS
-    public static String commit(String author, String message)  throws IOException {
+    public String commit(String author, String message) throws IOException {
         Git obj = new Git();
         Date date = new Date();
         String HeadFileLoc = "git/HEAD";

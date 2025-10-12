@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class GitWrapper {
+    private Git GitObj;
 
     /**
      * Initializes a new Git repository.
@@ -10,7 +11,7 @@ public class GitWrapper {
      */
     public void init() throws IOException {
         // to-do: implement functionality here
-        Git obj = new Git();
+        GitObj = new Git();
     };
 
     /**
@@ -26,8 +27,9 @@ public class GitWrapper {
         // to-do: implement functionality here
         File file = new File(filePath);
         // file.createNewFile();
-        Git obj = new Git();
-        obj.addFile(file);
+       // Git obj = new Git();
+        this.GitObj.addFile(file);
+        // obj.addFile(file);
     };
 
     /**
@@ -51,7 +53,7 @@ public class GitWrapper {
      */
     public String commit(String author, String message) throws IOException {
         // to-do: implement functionality here
-        return Git.commit(author, message);
+        return this.GitObj.commit(author, message);
     };
 
      /**
